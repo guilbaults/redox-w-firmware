@@ -24,7 +24,7 @@
 // Define payload length
 #define PAYLOAD_LENGTH 5 ///< 5 byte payload length
 
-#define MATRIX_ROWS 10
+#define MATRIX_ROWS 14
 
 // ticks for inactive keyboard
 // Binary printing
@@ -100,19 +100,35 @@ int main(void)
     // main loop
     while (true)
     {
-        for (int pipe = 0; pipe < 2; pipe++) {
+        for (int pipe = 0; pipe < 6; pipe++) {
             if (!nrf_gzll_get_rx_fifo_packet_count(pipe)) {
                 continue;
             }
 
-            uint32_t payload_len = PAYLOAD_LENGTH;
-            uint8_t payload[PAYLOAD_LENGTH];
-            bool ret = nrf_gzll_fetch_packet_from_rx_fifo(pipe, payload, &payload_len);
-            if (ret && payload_len == PAYLOAD_LENGTH) {
-                for (int i = 0; i < PAYLOAD_LENGTH; i++) {
-                    matrix[i * 2 + pipe] = payload[i];
+            if (pipe == 0 || pipe == 1) {
+                uint32_t payload_len = PAYLOAD_LENGTH;
+                uint8_t payload[PAYLOAD_LENGTH];
+                bool ret = nrf_gzll_fetch_packet_from_rx_fifo(pipe, payload, &payload_len);
+                if (ret && payload_len == PAYLOAD_LENGTH) {
+                    for (int i = 0; i < PAYLOAD_LENGTH; i++) {
+                        matrix[i * 2 + pipe] = payload[i];
+                    }
                 }
             }
+            if (pipe >= 2) {
+                // from finger buttons
+                uint32_t payload_len = 1;
+                uint8_t payload[1];
+                bool ret = nrf_gzll_fetch_packet_from_rx_fifo(pipe, payload, &payload_len);
+                if (ret && payload_len == 1) {
+                    // first is matrix[10] when pipe is 2
+                    // matrix[11] when pipe is 3
+                    // matrix[12] when pipe is 4
+                    // matrix[13] when pipe is 5
+                    matrix[10 + pipe - 2] = payload[0];
+                }
+            }
+
         }
 
         // checking for a poll request from QMK
@@ -120,7 +136,7 @@ int main(void)
         if (app_uart_get(&c) == NRF_SUCCESS && c == 's')
         {
             // sending data to QMK, and an end byte
-            nrf_drv_uart_tx(matrix, 10);
+            nrf_drv_uart_tx(matrix, MATRIX_ROWS);
             app_uart_put(0xE0);
 
             // debugging help, for printing keystates to a serial console

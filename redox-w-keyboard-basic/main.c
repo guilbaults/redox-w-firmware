@@ -28,16 +28,17 @@ static uint8_t ack_payload[NRF_GZLL_CONST_MAX_PAYLOAD_LENGTH]; ///< Placeholder 
 // Mark as inactive after a number of ticks:
 #define INACTIVITY_THRESHOLD 500 // 0.5sec
 
-#ifdef COMPILE_LEFT
+#if  defined(COMPILE_LEFT) || defined(COMPILE_FINGER_LEFT)
 static uint8_t channel_table[3]={4, 42, 77};
 #endif
-#ifdef COMPILE_RIGHT
+#if  defined(COMPILE_RIGHT) || defined(COMPILE_FINGER_RIGHT)
 static uint8_t channel_table[3]={25, 63, 33};
 #endif
 
 // Setup switch pins with pullups
 static void gpio_config(void)
 {
+    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
     nrf_gpio_cfg_sense_input(R01, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     nrf_gpio_cfg_sense_input(R02, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     nrf_gpio_cfg_sense_input(R03, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
@@ -59,11 +60,22 @@ static void gpio_config(void)
     nrf_gpio_pin_clear(C05);
     nrf_gpio_pin_clear(C06);
     nrf_gpio_pin_clear(C07);
+    #endif
+
+    #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
+    nrf_gpio_cfg_sense_input(R01, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+    nrf_gpio_cfg_sense_input(R02, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+    nrf_gpio_cfg_sense_input(R03, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+    nrf_gpio_cfg_sense_input(R04, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+    nrf_gpio_cfg_sense_input(R05, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+    nrf_gpio_cfg_sense_input(R06, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+    #endif
 }
 
 // Return the key states
 static void read_keys(uint8_t *row_stat)
 {
+    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
     unsigned short c;
     uint32_t input = 0;
     static const uint32_t COL_PINS[] = { C01, C02, C03, C04, C05, C06, C07 };
@@ -88,7 +100,29 @@ static void read_keys(uint8_t *row_stat)
         row_stat[4] = (row_stat[4] << 1) | ((input >> R05) & 1);
         nrf_gpio_pin_clear(COL_PINS[c]);
     }
+    #endif
 
+    #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
+    // pins are active low
+    if(nrf_gpio_pin_read(R01) == 0){
+        row_stat[0] = 1;
+    }
+    if(nrf_gpio_pin_read(R02) == 0){
+        row_stat[0] |= 2;
+    }
+    if(nrf_gpio_pin_read(R03) == 0){
+        row_stat[0] |= 4;
+    }
+    if(nrf_gpio_pin_read(R04) == 0){
+        row_stat[0] |= 8;
+    }
+    if(nrf_gpio_pin_read(R05) == 0){
+        row_stat[0] |= 16;
+    }
+    if(nrf_gpio_pin_read(R06) == 0){
+        row_stat[0] |= 32;
+    }
+    #endif
 }
 
 static bool compare_keys(const uint8_t* first, const uint8_t* second,
@@ -125,6 +159,7 @@ static void handle_inactivity(const uint8_t *keys_buffer)
         inactivity_ticks++;
         if (inactivity_ticks > INACTIVITY_THRESHOLD) {
             nrf_drv_rtc_disable(&rtc);
+            #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
             nrf_gpio_pin_set(C01);
             nrf_gpio_pin_set(C02);
             nrf_gpio_pin_set(C03);
@@ -132,6 +167,7 @@ static void handle_inactivity(const uint8_t *keys_buffer)
             nrf_gpio_pin_set(C05);
             nrf_gpio_pin_set(C06);
             nrf_gpio_pin_set(C07);
+            #endif
 
             inactivity_ticks = 0;
 
@@ -169,7 +205,12 @@ static void handle_send(const uint8_t* keys_buffer)
 // 1000Hz debounce sampling
 static void tick(nrf_drv_rtc_int_type_t int_type)
 {
+    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
     uint8_t keys_buffer[ROWS] = {0, 0, 0, 0, 0};
+    #endif
+    #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
+    uint8_t keys_buffer[ROWS] = {0};
+    #endif
     read_keys(keys_buffer);
 
     handle_inactivity(keys_buffer);

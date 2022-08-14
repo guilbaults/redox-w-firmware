@@ -1,7 +1,7 @@
 #ifndef __REDOX_W_FIRMWARE_CONFIG_REDOX_W_H__
 #define __REDOX_W_FIRMWARE_CONFIG_REDOX_W_H__
 
-#if defined(COMPILE_LEFT) && defined(COMPILE_RIGHT)
+#if defined(COMPILE_LEFT) && defined(COMPILE_RIGHT) && defined(COMPILE_FINGER_LEFT) && defined(COMPILE_FINGER_RIGHT)
 #error "Only one of COMPILE_LEFT and COMPILE_RIGHT can be defined at once."
 #endif
 
@@ -45,8 +45,31 @@
 
 #endif
 
+#if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
 #define COLUMNS 7
 #define ROWS 5
+#endif
+
+#if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
+#define COLUMNS 7
+#define ROWS 1
+#endif
+
+#ifdef COMPILE_FINGER_LEFT
+#define PIPE_NUMBER 2
+#endif
+#ifdef COMPILE_FINGER_RIGHT
+#define PIPE_NUMBER 3
+#endif
+
+#if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
+#define R01 20
+#define R02 29
+#define R03 9
+#define R04 2
+#define R05 7
+#define R06 0
+#endif
 
 // Low frequency clock source to be used by the SoftDevice
 #define NRF_CLOCK_LFCLKSRC      {.source        = NRF_CLOCK_LF_SRC_XTAL,            \
