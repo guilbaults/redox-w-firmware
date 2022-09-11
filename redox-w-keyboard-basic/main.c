@@ -28,10 +28,10 @@ static uint8_t ack_payload[NRF_GZLL_CONST_MAX_PAYLOAD_LENGTH]; ///< Placeholder 
 // Mark as inactive after a number of ticks:
 #define INACTIVITY_THRESHOLD 500 // 0.5sec
 
-#if  defined(COMPILE_LEFT) || defined(COMPILE_FINGER_LEFT)
+#if  defined(COMPILE_LEFT) || defined(COMPILE_FINGER_LEFT) || defined(COMPILE_ACC_LEFT)
 static uint8_t channel_table[3]={4, 42, 77};
 #endif
-#if  defined(COMPILE_RIGHT) || defined(COMPILE_FINGER_RIGHT)
+#if  defined(COMPILE_RIGHT) || defined(COMPILE_FINGER_RIGHT) || defined(COMPILE_ACC_RIGHT)
 static uint8_t channel_table[3]={25, 63, 33};
 #endif
 
@@ -62,13 +62,16 @@ static void gpio_config(void)
     nrf_gpio_pin_clear(C07);
     #endif
 
-    #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
+    #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT) || defined(COMPILE_ACC_LEFT) || defined(COMPILE_ACC_RIGHT)
     nrf_gpio_cfg_sense_input(R01, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
     nrf_gpio_cfg_sense_input(R02, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
     nrf_gpio_cfg_sense_input(R03, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
     nrf_gpio_cfg_sense_input(R04, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
     nrf_gpio_cfg_sense_input(R05, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
     nrf_gpio_cfg_sense_input(R06, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+        #if defined(COMPILE_ACC_LEFT) || defined(COMPILE_ACC_RIGHT)
+        nrf_gpio_cfg_sense_input(R07, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+        #endif
     #endif
 }
 
@@ -102,7 +105,7 @@ static void read_keys(uint8_t *row_stat)
     }
     #endif
 
-    #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
+    #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT) || defined(COMPILE_ACC_LEFT) || defined(COMPILE_ACC_RIGHT)
     // pins are active low
     if(nrf_gpio_pin_read(R01) == 0){
         row_stat[0] = 1;
@@ -122,6 +125,11 @@ static void read_keys(uint8_t *row_stat)
     if(nrf_gpio_pin_read(R06) == 0){
         row_stat[0] |= 32;
     }
+    #if defined(COMPILE_ACC_LEFT) || defined(COMPILE_ACC_RIGHT)
+        if(nrf_gpio_pin_read(R07) == 0){
+            row_stat[0] |= 64;
+        }
+    #endif
     #endif
 }
 
@@ -208,7 +216,7 @@ static void tick(nrf_drv_rtc_int_type_t int_type)
     #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
     uint8_t keys_buffer[ROWS] = {0, 0, 0, 0, 0};
     #endif
-    #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
+    #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT) || defined(COMPILE_ACC_LEFT) || defined(COMPILE_ACC_RIGHT)
     uint8_t keys_buffer[ROWS] = {0};
     #endif
     read_keys(keys_buffer);

@@ -50,7 +50,7 @@
 #define ROWS 5
 #endif
 
-#if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
+#if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT) || defined(COMPILE_ACC_LEFT) || defined(COMPILE_ACC_RIGHT)
 #define COLUMNS 7
 #define ROWS 1
 #endif
@@ -62,13 +62,30 @@
 #define PIPE_NUMBER 3
 #endif
 
+#ifdef COMPILE_ACC_LEFT
+#define PIPE_NUMBER 4
+#endif
+#ifdef COMPILE_ACC_RIGHT
+#define PIPE_NUMBER 5
+#endif
+
 #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
-#define R01 20
-#define R02 29
-#define R03 9
-#define R04 2
-#define R05 7
-#define R06 0
+#define R01 11
+#define R02 19
+#define R03 20
+#define R04 21
+#define R05 10
+#define R06 30
+#endif
+
+#if defined(COMPILE_ACC_LEFT) || defined(COMPILE_ACC_RIGHT)
+#define R01 22
+#define R02 28
+#define R03 30
+#define R04 3
+#define R05 2
+#define R06 20
+#define R07 21
 #endif
 
 // Low frequency clock source to be used by the SoftDevice

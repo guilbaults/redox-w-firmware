@@ -1,7 +1,7 @@
 #!/bin/bash
 
 MAKEDIR=$(dirname "$(readlink -f "$0")")/custom/armgcc/
-HEX=_build/nrf51822_xxac-finger-right.hex
+HEX=_build/nrf51822_xxac-acc-right.hex
 
 echo '=============================== MAKING ================================'
 make -C ${MAKEDIR}
