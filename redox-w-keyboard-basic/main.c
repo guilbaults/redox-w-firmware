@@ -28,17 +28,17 @@ static uint8_t ack_payload[NRF_GZLL_CONST_MAX_PAYLOAD_LENGTH]; ///< Placeholder 
 // Mark as inactive after a number of ticks:
 #define INACTIVITY_THRESHOLD 500 // 0.5sec
 
-#if  defined(COMPILE_LEFT) || defined(COMPILE_FINGER_LEFT) || defined(COMPILE_ACC_LEFT)
+#if  defined(COMPILE_LEFT) || defined(COMPILE_FINGER_LEFT) || defined(COMPILE_ACC_LEFT) || defined(COMPILE_KNEE_LEFT)
 static uint8_t channel_table[3]={4, 42, 77};
 #endif
-#if  defined(COMPILE_RIGHT) || defined(COMPILE_FINGER_RIGHT) || defined(COMPILE_ACC_RIGHT)
+#if  defined(COMPILE_RIGHT) || defined(COMPILE_FINGER_RIGHT) || defined(COMPILE_ACC_RIGHT) || defined(COMPILE_KNEE_RIGHT)
 static uint8_t channel_table[3]={25, 63, 33};
 #endif
 
 // Setup switch pins with pullups
 static void gpio_config(void)
 {
-    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
+    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT) || defined(COMPILE_KNEE_LEFT) || defined(COMPILE_KNEE_RIGHT)
     nrf_gpio_cfg_sense_input(R01, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     nrf_gpio_cfg_sense_input(R02, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
     nrf_gpio_cfg_sense_input(R03, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
@@ -51,7 +51,9 @@ static void gpio_config(void)
     nrf_gpio_cfg_output(C04);
     nrf_gpio_cfg_output(C05);
     nrf_gpio_cfg_output(C06);
-    nrf_gpio_cfg_output(C07);
+    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
+        nrf_gpio_cfg_output(C07);
+    #endif
 
     nrf_gpio_pin_clear(C01);
     nrf_gpio_pin_clear(C02);
@@ -59,7 +61,9 @@ static void gpio_config(void)
     nrf_gpio_pin_clear(C04);
     nrf_gpio_pin_clear(C05);
     nrf_gpio_pin_clear(C06);
-    nrf_gpio_pin_clear(C07);
+    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
+        nrf_gpio_pin_clear(C07);
+    #endif
     #endif
 
     #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT) || defined(COMPILE_ACC_LEFT) || defined(COMPILE_ACC_RIGHT)
@@ -78,10 +82,15 @@ static void gpio_config(void)
 // Return the key states
 static void read_keys(uint8_t *row_stat)
 {
-    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
+    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT) || defined(COMPILE_KNEE_LEFT) || defined(COMPILE_KNEE_RIGHT)
     unsigned short c;
     uint32_t input = 0;
-    static const uint32_t COL_PINS[] = { C01, C02, C03, C04, C05, C06, C07 };
+    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
+        static const uint32_t COL_PINS[] = { C01, C02, C03, C04, C05, C06, C07 };
+    #endif
+    #if defined(COMPILE_KNEE_LEFT) || defined(COMPILE_KNEE_RIGHT)
+        static const uint32_t COL_PINS[] = { C01, C02, C03, C04, C05, C06 };
+    #endif
 
     // scan matrix by columns
     for (c = 0; c < COLUMNS; ++c) {
@@ -167,14 +176,16 @@ static void handle_inactivity(const uint8_t *keys_buffer)
         inactivity_ticks++;
         if (inactivity_ticks > INACTIVITY_THRESHOLD) {
             nrf_drv_rtc_disable(&rtc);
-            #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
+            #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT) || defined(COMPILE_KNEE_LEFT) || defined(COMPILE_KNEE_RIGHT)
             nrf_gpio_pin_set(C01);
             nrf_gpio_pin_set(C02);
             nrf_gpio_pin_set(C03);
             nrf_gpio_pin_set(C04);
             nrf_gpio_pin_set(C05);
             nrf_gpio_pin_set(C06);
-            nrf_gpio_pin_set(C07);
+            #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
+                nrf_gpio_pin_set(C07);
+            #endif
             #endif
 
             inactivity_ticks = 0;
@@ -213,7 +224,7 @@ static void handle_send(const uint8_t* keys_buffer)
 // 1000Hz debounce sampling
 static void tick(nrf_drv_rtc_int_type_t int_type)
 {
-    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT)
+    #if defined(COMPILE_LEFT) || defined(COMPILE_RIGHT) || defined(COMPILE_KNEE_LEFT) || defined(COMPILE_KNEE_RIGHT)
     uint8_t keys_buffer[ROWS] = {0, 0, 0, 0, 0};
     #endif
     #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT) || defined(COMPILE_ACC_LEFT) || defined(COMPILE_ACC_RIGHT)

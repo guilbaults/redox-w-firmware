@@ -24,7 +24,7 @@
 // Define payload length
 #define PAYLOAD_LENGTH 5 ///< 5 byte payload length
 
-#define MATRIX_ROWS 14
+#define MATRIX_ROWS 24
 
 // ticks for inactive keyboard
 // Binary printing
@@ -100,7 +100,7 @@ int main(void)
     // main loop
     while (true)
     {
-        for (int pipe = 0; pipe < 6; pipe++) {
+        for (int pipe = 0; pipe < 8; pipe++) {
             if (!nrf_gzll_get_rx_fifo_packet_count(pipe)) {
                 continue;
             }
@@ -115,8 +115,8 @@ int main(void)
                     }
                 }
             }
-            if (pipe >= 2) {
-                // from finger buttons
+            if (pipe == 2 || pipe == 3 || pipe == 4 || pipe == 5) {
+                // from finger buttons or acc
                 uint32_t payload_len = 1;
                 uint8_t payload[1];
                 bool ret = nrf_gzll_fetch_packet_from_rx_fifo(pipe, payload, &payload_len);
@@ -128,7 +128,18 @@ int main(void)
                     matrix[10 + pipe - 2] = payload[0];
                 }
             }
-
+            if (pipe == 6 || pipe == 7) {
+                // rows 14, 16, 18, 20, 22
+                // rows 15, 17, 19, 21, 23
+                uint32_t payload_len = PAYLOAD_LENGTH;
+                uint8_t payload[PAYLOAD_LENGTH];
+                bool ret = nrf_gzll_fetch_packet_from_rx_fifo(pipe, payload, &payload_len);
+                if (ret && payload_len == PAYLOAD_LENGTH) {
+                    for (int i = 0; i < PAYLOAD_LENGTH; i++) {
+                        matrix[i * 2 + (pipe - 6) + 14] = payload[i];
+                    }
+                }
+            }
         }
 
         // checking for a poll request from QMK

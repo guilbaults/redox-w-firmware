@@ -1,11 +1,11 @@
 #ifndef __REDOX_W_FIRMWARE_CONFIG_REDOX_W_H__
 #define __REDOX_W_FIRMWARE_CONFIG_REDOX_W_H__
 
-#if defined(COMPILE_LEFT) && defined(COMPILE_RIGHT) && defined(COMPILE_FINGER_LEFT) && defined(COMPILE_FINGER_RIGHT)
+#if defined(COMPILE_LEFT) && defined(COMPILE_RIGHT) || defined(COMPILE_FINGER_LEFT) && defined(COMPILE_FINGER_RIGHT) || defined(COMPILE_ACC_LEFT) && defined(COMPILE_ACC_RIGHT) || defined(COMPILE_KNEE_LEFT) && defined(COMPILE_KNEE_RIGHT)
 #error "Only one of COMPILE_LEFT and COMPILE_RIGHT can be defined at once."
 #endif
 
-#ifdef COMPILE_LEFT
+#if defined(COMPILE_LEFT)
 
 #define PIPE_NUMBER 0
 
@@ -25,7 +25,7 @@
 
 #endif
 
-#ifdef COMPILE_RIGHT
+#if defined(COMPILE_RIGHT)
 
 #define PIPE_NUMBER 1
 
@@ -55,6 +55,11 @@
 #define ROWS 1
 #endif
 
+#if defined(COMPILE_KNEE_LEFT) || defined(COMPILE_KNEE_RIGHT)
+#define COLUMNS 6
+#define ROWS 5
+#endif
+
 #ifdef COMPILE_FINGER_LEFT
 #define PIPE_NUMBER 2
 #endif
@@ -67,6 +72,13 @@
 #endif
 #ifdef COMPILE_ACC_RIGHT
 #define PIPE_NUMBER 5
+#endif
+
+#ifdef COMPILE_KNEE_LEFT
+#define PIPE_NUMBER 6
+#endif
+#ifdef COMPILE_KNEE_RIGHT
+#define PIPE_NUMBER 7
 #endif
 
 #if defined(COMPILE_FINGER_LEFT) || defined(COMPILE_FINGER_RIGHT)
@@ -86,6 +98,21 @@
 #define R05 2
 #define R06 20
 #define R07 21
+#endif
+
+#if defined(COMPILE_KNEE_LEFT) || defined(COMPILE_KNEE_RIGHT)
+#define R01 25
+#define R02 24
+#define R03 23
+#define R04 22
+#define R05 21
+
+#define C01 28
+#define C02 29
+#define C03 30
+#define C04 0
+#define C05 1
+#define C06 2
 #endif
 
 // Low frequency clock source to be used by the SoftDevice

@@ -116,7 +116,9 @@ all: $(OUTPUT_BINARY_DIRECTORY)/nrf51822_xxac-keyboard-left.hex  \
      $(OUTPUT_BINARY_DIRECTORY)/nrf51822_xxac-finger-left.hex \
      $(OUTPUT_BINARY_DIRECTORY)/nrf51822_xxac-finger-right.hex \
      $(OUTPUT_BINARY_DIRECTORY)/nrf51822_xxac-acc-left.hex \
-     $(OUTPUT_BINARY_DIRECTORY)/nrf51822_xxac-acc-right.hex
+     $(OUTPUT_BINARY_DIRECTORY)/nrf51822_xxac-acc-right.hex \
+	 $(OUTPUT_BINARY_DIRECTORY)/nrf51822_xxac-knee-left.hex \
+     $(OUTPUT_BINARY_DIRECTORY)/nrf51822_xxac-knee-right.hex
 
 C_SOURCE_FILE_NAMES = $(notdir $(C_SOURCE_FILES))
 C_PATHS = $(call remduplicates, $(dir $(C_SOURCE_FILES) ) )
@@ -145,6 +147,8 @@ $(OBJECT_DIRECTORY)/main-finger-left.o: CFLAGS += -DCOMPILE_FINGER_LEFT
 $(OBJECT_DIRECTORY)/main-finger-right.o: CFLAGS += -DCOMPILE_FINGER_RIGHT
 $(OBJECT_DIRECTORY)/main-acc-left.o: CFLAGS += -DCOMPILE_ACC_LEFT
 $(OBJECT_DIRECTORY)/main-acc-right.o: CFLAGS += -DCOMPILE_ACC_RIGHT
+$(OBJECT_DIRECTORY)/main-knee-left.o: CFLAGS += -DCOMPILE_KNEE_LEFT
+$(OBJECT_DIRECTORY)/main-knee-right.o: CFLAGS += -DCOMPILE_KNEE_RIGHT
 
 $(OBJECT_DIRECTORY)/main-%.o: $(abspath ../../main.c)
 	@echo Compiling file: $(notdir $<)
